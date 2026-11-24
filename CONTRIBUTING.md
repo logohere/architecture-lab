@@ -30,7 +30,7 @@ After staging, run `bunx dotdog@1.0.0 check --staged --json`. Node users may use
 
 ## Submit a pull request
 
-Link the issue, summarize the changes and list exact verification commands, outcomes and remaining limitations. Include reproducible evidence for research claims. A draft PR is appropriate for unfinished changes; ready PRs must pass CI. Keep review discussions and implementation decisions in the issue or PR, and keep the specification current.
+Link the issue, summarize the changes and list exact verification commands, outcomes and remaining limitations. State the public API/CLI compatibility impact and update the Unreleased changelog for user-visible changes. Follow the [version policy](specs/architecture-lab/constitution.dog#version-policy); only an approved release PR changes the release version. Include reproducible evidence for research claims. A draft PR is appropriate for unfinished changes; ready PRs must pass CI. Keep review discussions and implementation decisions in the issue or PR, and keep the specification current.
 
 Main requires pull requests and passing checks. Maintainers review scope, correctness, evidence and licensing before merging. Automated checks do not replace independent review. AI-assisted work follows [AGENTS.md](AGENTS.md) and the same review requirements.
 

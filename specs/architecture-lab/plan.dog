@@ -33,7 +33,7 @@
 
 - [ ] Locked build, tests, lint, CLI reproduction and graph integrity on supported hosts.
 - [ ] Review source for secrets, private data, upstream licenses and security risks.
-- [ ] Obtain maintainer approval for visibility and version tags; publish versioned changelog, tutorial and evidence.
+- [ ] Prepare the initial SemVer release PR, verify Cargo version and lockfile, date the changelog entry, and obtain maintainer approval for a matching immutable tag; publish tutorial and evidence (#9).
 - [ ] Validate demand with hardware researchers and small engineering teams; evaluate integration, custom optimization and support.
 
 Target windows are planning assumptions. Release a clearly labeled simulator alpha if hardware slips; no unverified performance or market-leadership claims. Defer custom ISA, OS, ASIC and full interaction-net runtime until justified.

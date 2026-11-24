@@ -55,6 +55,7 @@ Dotdog structural and lexical checks do not prove runtime correctness. Report un
 ## Deliver
 
 - Use a focused feature branch and a linked PR. Never commit directly to main, bypass branch protection or force-push without authorization.
+- State the SemVer impact of each substantive PR, update the Unreleased changelog for user-visible changes, and follow the canonical version policy in constitution.dog. Do not bump package versions or create release tags during unrelated feature work.
 - Explain the problem, implementation, relevant spec changes, exact tests, results and limitations. Reference the issue; close it through a merged PR only when its acceptance criteria are satisfied.
 - Review the complete diff, including generated files and accidental dependencies. Resolve review findings and rerun CI after material edits.
 - Leave a clean working tree. Obtain maintainer authorization before merging or tagging a release.

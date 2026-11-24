@@ -10,3 +10,12 @@
 - Isolate untrusted candidates without credentials or hardware access. Keep private device data and secrets out of Git. Respect third-party licenses.
 - Dotdog human-authored specs govern intent; generated graphs, source and tests record implementation and evidence. Do not invent measurements or duplicate roadmaps.
 - Use feature branches and PRs; preserve independent review.
+
+## Version policy
+
+- Follow Semantic Versioning 2.0.0 and ROS 2-style compatibility and change-control practices (REP-2004). Cargo.toml is the single authoritative package version; Cargo.lock must agree.
+- Public contracts are the documented Rust API (public items in the library and benchmarks module), CLI commands and exit status, and benchmark CSV column names, order, and meanings. Undocumented implementation details and explicitly experimental interfaces are not stable contracts. Fixes to erroneous model results require a changelog entry and invalidate affected comparisons.
+- While the project is at 0.x, patch releases are compatible bug fixes only. Use a new minor version for features or explicitly disclosed incompatible changes. At 1.0 and later, use patch for compatible fixes, minor for compatible additions or deprecations, and major for incompatible changes.
+- Maintained release lines accept only backward-compatible changes. Provide deprecation and migration notes before removing a supported interface; do not silently reinterpret a workload or evidence format.
+- Every substantive PR states its compatibility impact and records user-visible changes under Unreleased in CHANGELOG.md. A release PR sets the intended Cargo version, updates Cargo.lock and moves released entries into a dated version heading. CI must pass before maintainer-approved tagging and publishing.
+- Release tags use vMAJOR.MINOR.PATCH, with a SemVer prerelease suffix when appropriate. Tags must match Cargo metadata and a dated changelog heading. Never move or reuse a published tag. No publication occurs automatically from ordinary PR CI.

@@ -115,6 +115,10 @@ bunx dotdog@1.0.0 check --json
 
 With npm, substitute `npx --yes dotdog@1.0.0` for `bunx dotdog@1.0.0`. Generated graph artifacts are local and excluded from version control. Dotdog checks complement Rust tests; they are not a substitute for tests or formal verification.
 
+## Releases and compatibility
+
+The project is in initial `0.x` development and follows [Semantic Versioning 2.0.0](https://semver.org/) with ROS 2-inspired [release and compatibility practices](https://reps.openrobotics.org/rep-2004/). Cargo metadata is the package version source of truth. See the [version policy](specs/architecture-lab/constitution.dog#version-policy) for public contracts, compatibility rules and release requirements. The [changelog](CHANGELOG.md) records user-visible changes; an approved tagged release is distinct from development on main.
+
 ## Contributing
 
 Start with the [implementation plan](specs/architecture-lab/plan.dog) and [open issues](https://github.com/logohere/architecture-lab/issues). Discuss scope in an issue, make a focused branch, and open a pull request with tests and reproducible evidence. Update the relevant specifications with any intentional change to behavior.
