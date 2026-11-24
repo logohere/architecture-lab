@@ -1,7 +1,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { validateCorpus } from "./verify-holdout.mjs";
+import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { validateCorpus, verifyBaseline } from "./verify-holdout.mjs";
 
 const publicInputs = "mixed|lit:2;lit:3;add:0:1\n";
 const encode = (cases) => Buffer.from(JSON.stringify({ schema: "arithmetic-v1", nonce: "a".repeat(32), cases }));
@@ -39,4 +42,31 @@ test("actual public suite is exported from the Rust reference and rejected", () 
   assert.throws(() => validateCorpus(encode([{ id: "renamed-" + id, expected: 100, nodes }]), inputs), /public workload/);
   assert.throws(() => validateCorpus(Buffer.from(JSON.stringify({ schema: "arithmetic-v1", cases: [sample] })), inputs), /invalid corpus schema/);
   assert.equal(validateCorpus(encode([sample]), inputs).case_count, 1);
+});
+
+test("baseline execution rejects incorrect outputs and feasible but wrong cycle counts", () => {
+  const bytes = encode([sample]);
+  const correct = (_, lanes) => "output,modeled_cycles\n1," + (lanes === 1 ? 3 : 2) + "\n";
+  assert.deepEqual(verifyBaseline(bytes, publicInputs, correct).baseline, [
+    { lanes: 1, modeled_cycles: 3 }, { lanes: 2, modeled_cycles: 2 },
+    { lanes: 4, modeled_cycles: 2 }, { lanes: 8, modeled_cycles: 2 },
+  ]);
+  assert.throws(() => verifyBaseline(bytes, publicInputs, () => "output,modeled_cycles\n2,3\n"), /mismatch/);
+  assert.throws(() => verifyBaseline(bytes, publicInputs, () => "output,modeled_cycles\n1,3\n"), /mismatch/);
+});
+
+test("reviewer executes the real Rust baseline on an external public test fixture", () => {
+  const dir = mkdtempSync(join(tmpdir(), "architecture-lab-test-"));
+  try {
+    const file = join(dir, "public-test.json");
+    writeFileSync(file, encode([sample]));
+    const result = JSON.parse(execFileSync(process.execPath, ["scripts/verify-holdout.mjs", file, "--baseline"], { encoding: "utf8" }));
+    assert.equal(result.evaluated_runs, 4);
+    assert.match(result.executable_sha256, /^[a-f0-9]{64}$/);
+    assert.deepEqual(result.baseline.map((r) => r.modeled_cycles), [3, 2, 2, 2]);
+    assert.equal(Object.hasOwn(result, "cases"), false);
+    assert.equal(Object.hasOwn(result, "nonce"), false);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });

@@ -83,6 +83,53 @@ export function validateCorpus(bytes, publicInputs) {
   };
 }
 
+function expectedCycles(nodes, lanes) {
+  const parent = new Array(nodes.length).fill(-1);
+  const remaining = new Array(nodes.length).fill(0);
+  let ready = [];
+  for (const [i, [op, a, b]] of nodes.entries()) {
+    if (op === "lit") ready.push(i);
+    else {
+      remaining[i] = 2;
+      parent[a] = parent[b] = i;
+    }
+  }
+  let cycles = 0;
+  let completed = 0;
+  while (ready.length) {
+    ready.sort((a, b) => a - b);
+    const batch = ready.splice(0, lanes);
+    for (const i of batch) {
+      const next = parent[i];
+      if (next >= 0 && --remaining[next] === 0) ready.push(next);
+    }
+    completed += batch.length;
+    cycles++;
+  }
+  if (completed !== nodes.length) throw new Error("incomplete baseline schedule");
+  return cycles;
+}
+
+export function verifyBaseline(bytes, publicInputs, execute) {
+  const seal = validateCorpus(bytes, publicInputs);
+  const { cases } = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes));
+  const totals = [];
+  for (const lanes of [1, 2, 4, 8]) {
+    let modeled_cycles = 0;
+    for (const entry of cases) {
+      const input = entry.nodes.map((node) => node.join(":")).join(";");
+      const cycles = expectedCycles(entry.nodes, lanes);
+      const actual = execute(input, lanes).replaceAll("\r\n", "\n");
+      if (actual !== `output,modeled_cycles\n${entry.expected},${cycles}\n`) {
+        throw new Error("baseline result mismatch");
+      }
+      modeled_cycles += cycles;
+    }
+    totals.push({ lanes, modeled_cycles });
+  }
+  return { ...seal, baseline: totals, evaluated_runs: cases.length * 4 };
+}
+
 function readBounded(path) {
   const fd = openSync(path, "r");
   try {
@@ -103,17 +150,31 @@ function readBounded(path) {
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
-    if (process.argv.length !== 3) throw new Error("usage: node scripts/verify-holdout.mjs <external-corpus.json>");
+    const baseline = process.argv[3] === "--baseline";
+    if (process.argv.length !== (baseline ? 4 : 3)) throw new Error("invalid arguments");
     const root = realpathSync(resolve(dirname(fileURLToPath(import.meta.url)), ".."));
     const path = realpathSync(process.argv[2]);
     const rel = relative(root, path);
     if (!isAbsolute(rel) && rel !== ".." && !rel.startsWith("../") && !rel.startsWith("..\\")) {
       throw new Error("corpus must remain outside the repository");
     }
-    const publicInputs = execFileSync("cargo", ["run", "--locked", "--quiet", "--", "bench-inputs"], {
-      cwd: root, encoding: "utf8", timeout: 60000, maxBuffer: MAX_BYTES,
-    });
-    console.log(JSON.stringify(validateCorpus(readBounded(path), publicInputs), null, 2));
+    const bytes = readBounded(path);
+    const options = { cwd: root, encoding: "utf8", timeout: 60000, maxBuffer: MAX_BYTES };
+    if (baseline) {
+      const messages = execFileSync("cargo", ["build", "--locked", "--bin", "architecture-lab", "--message-format=json"], options);
+      const artifacts = messages.trim().split("\n").map(JSON.parse).filter((m) =>
+        m.reason === "compiler-artifact" && m.target.name === "architecture-lab" && m.executable);
+      if (artifacts.length !== 1) throw new Error("missing baseline executable");
+      const executable = artifacts[0].executable;
+      const executable_sha256 = digest(readFileSync(executable));
+      const publicInputs = execFileSync(executable, ["bench-inputs"], options);
+      const evidence = verifyBaseline(bytes, publicInputs, (input, lanes) =>
+        execFileSync(executable, ["run", String(lanes)], { ...options, input }));
+      console.log(JSON.stringify({ ...evidence, executable_sha256 }, null, 2));
+    } else {
+      const publicInputs = execFileSync("cargo", ["run", "--locked", "--quiet", "--", "bench-inputs"], options);
+      console.log(JSON.stringify(validateCorpus(bytes, publicInputs), null, 2));
+    }
   } catch {
     console.error("Corpus validation failed; inspect the reviewer-side input locally.");
     process.exitCode = 1;
