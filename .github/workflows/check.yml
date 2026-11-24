@@ -1,6 +1,8 @@
 name: Rust checks
 on:
   workflow_dispatch:
+  push:
+    tags: ['v*']
   pull_request:
     types: [opened, reopened, synchronize, ready_for_review]
 permissions:
@@ -25,6 +27,8 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
+      - run: node scripts/check-release.mjs
+      - run: node --test scripts/check-release.test.mjs
       - run: npx --yes dotdog@1.0.0 validate
       - run: npx --yes dotdog@1.0.0 check --json
       - run: npx --yes dotdog@1.0.0 scenario-check Benchmark --project architecture-lab --json
