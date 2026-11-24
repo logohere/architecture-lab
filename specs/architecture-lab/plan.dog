@@ -1,0 +1,48 @@
+# Implementation Plan
+
+## Phase 0: Foundation
+
+- [x] Rust arithmetic DAG and deterministic scheduler; tests and benchmark CLI.
+- [x] Apache-2.0 license, contributor and security policies.
+- [ ] Hosted CI and public release approval.
+
+## Phase 1: Evaluator (days 2–4)
+
+- [ ] Freeze reference semantics and benchmark workloads; separate holdouts.
+- [ ] Add negative controls and independent reference comparisons.
+
+## Phase 2: Search (days 5–7)
+
+- [ ] Deterministic candidate search and content-addressed experiment ledger.
+- [ ] Record cycles, wall time, resource usage, tool/source hashes, seeds and failures.
+- [ ] Cap each batch at 100 software, 10 RTL and two routed candidates initially; agents propose structural changes, deterministic algorithms search parameters.
+
+## Phase 3: RTL (week 2)
+
+- [ ] SystemVerilog baseline, independent reference comparison, reset/backpressure tests.
+- [ ] Validate Cora Z7-07S configuration and routed Vivado timing/resource reports.
+- [ ] Evaluate formal tools with a bounded feasibility experiment.
+
+## Phase 4: Hardware (week 3)
+
+- [ ] Verify finalist improvement on independent workloads; record model/RTL cycles, routed frequency and LUT/FF/BRAM/DSP usage.
+- [ ] Operator-approved physical test and reproducible evidence; distinguish estimated power from measured energy.
+
+## Phase 5: Public Alpha (week 4)
+
+- [ ] Locked build, tests, lint, CLI reproduction and graph integrity on supported hosts.
+- [ ] Review source for secrets, private data, upstream licenses and security risks.
+- [ ] Obtain maintainer approval for visibility and version tags; publish versioned changelog, tutorial and evidence.
+- [ ] Validate demand with hardware researchers and small engineering teams; evaluate integration, custom optimization and support.
+
+Target windows are planning assumptions. Release a clearly labeled simulator alpha if hardware slips; no unverified performance or market-leadership claims. Defer custom ISA, OS, ASIC and full interaction-net runtime until justified.
+
+## Verify
+
+### Entity: Program
+file: src/lib.rs
+properties: [nodes]
+
+### Entity: Run
+file: src/lib.rs
+properties: [output, cycles]

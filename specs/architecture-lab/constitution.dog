@@ -1,0 +1,12 @@
+# Engineering Constitution
+
+## Principles
+
+- Correctness before optimization. Freeze semantics, evaluator and holdouts before search; candidate agents cannot modify them.
+- Keep modeled, simulated, synthesized and physically measured results distinct. Report all successful and failed experiments with commands, hashes, tool versions and limits.
+- Compare identical inputs, precision and constraints. Holdout changes invalidate prior comparisons. Test malformed inputs, negative controls, reset, backpressure and termination where applicable.
+- Local-first, bounded and reproducible. Cache only identical behavior-affecting inputs. No paid compute by default. One Vivado job at a time.
+- Require passing correctness, timing and resource gates before candidate promotion. Hardware programming and public release require operator approval.
+- Isolate untrusted candidates without credentials or hardware access. Keep private device data and secrets out of Git. Respect third-party licenses.
+- Dotdog human-authored specs govern intent; generated graphs, source and tests record implementation and evidence. Do not invent measurements or duplicate roadmaps.
+- Use feature branches and PRs; preserve independent review.

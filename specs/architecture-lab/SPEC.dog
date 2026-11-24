@@ -1,0 +1,30 @@
+# Architecture Lab
+
+## Product
+
+A local-first, open-source toolkit for reproducible hardware architecture exploration. Start with a bounded arithmetic graph accelerator on Digilent Cora Z7-07S. Promote only verified candidates from software models to RTL and hardware.
+
+## User Stories
+
+| ID | Story | Priority | Acceptance |
+|---|---|---|---|
+| US-01 | Run the reference model and benchmark | P0 | Locked Rust build produces deterministic outputs and cycle counts |
+| US-02 | Explore competing architectures | P0 | Bounded search ranks correct candidates against a fixed baseline |
+| US-03 | Reproduce an experiment | P0 | Inputs, source/tool identities, seed and results identify the run |
+| US-04 | Qualify an FPGA design | P0 | Independent RTL checks, routed timing and resources pass |
+| US-05 | Measure a candidate on hardware | P1 | Operator-approved capture agrees with reference and is labeled physical |
+
+## Architecture
+
+Workloads -> reference evaluator -> candidate search -> RTL verification -> synthesis and routing -> approved hardware test -> retained evidence.
+
+The implemented model is a topologically ordered arithmetic DAG with one consumer per non-root node, wrapping u32 addition and multiplication, and deterministic ready-node scheduling. Every node takes one modeled cycle. Memory and interconnect costs are not modeled. It is not a general interaction-net processor.
+
+Planned components: independent evaluator, candidate configuration, experiment ledger, RTL and board adapter. Rust and SystemVerilog first; adopt formal tools or compilers only after a justified evaluation. No mandatory hosted service or other personal repository.
+
+## Scenario: Benchmark
+
+1. Construct a Program from valid nodes.
+2. Evaluate the Program using the reference model.
+3. Produce a Run for each supported lane count.
+4. Compare Run output with the reference and report modeled cycles.
