@@ -53,6 +53,11 @@ After staging, run `bunx dotdog@1.0.0 check --staged --json`. The npx equivalent
 
 Dotdog structural and lexical checks do not prove runtime correctness. Report unresolved references, incomplete graph coverage, failing tests and experimental limitations. Do not fabricate results or declare hardware support without evidence.
 
+## Review evidence
+
+- Where available, use independent local research/code-analysis tools to check requirements, risk, scope and regression evidence. Treat their findings as advisory; a static score, generated review or graph check does not establish functional or formal correctness. Keep private knowledge and local tool paths out of the public repository; optional review tools must not become build dependencies.
+- Trace every changed requirement to a runnable positive or negative test, retain the actual command and result in the PR, and distinguish code review from RTL simulation, formal verification and physical measurement.
+
 ## Deliver
 
 - Use a focused feature branch and a linked PR. Never commit directly to main, bypass branch protection or force-push without authorization.

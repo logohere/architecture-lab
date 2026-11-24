@@ -16,20 +16,21 @@
 
 ## Phase 2: Search (days 5–7)
 
-- [ ] Deterministic candidate search and content-addressed experiment ledger.
-- [ ] Record cycles, wall time, resource usage, tool/source hashes, seeds and failures.
+- [ ] Freeze workload categories and baseline comparison rules; add a bounded, deterministic candidate search and content-addressed experiment ledger only after the independent corpus seal.
+- [ ] Record the candidate hypothesis, parameter manifest, corpus/evaluator/RTL hashes, exact tool versions, seed, cycle counts, wall time, resources and all failures. Keep candidate worktrees isolated; evaluators remain reviewer-controlled.
 - [ ] Cap each batch at 100 software, 10 RTL and two routed candidates initially; agents propose structural changes, deterministic algorithms search parameters.
 
 ## Phase 3: RTL (week 2)
 
 - [x] Fixed single-lane SystemVerilog baseline, reference fixture comparison, reset/backpressure and malformed-input tests (#14).
-- [ ] Implement an out-of-context Vivado flow for the exact Cora Z7-07S part; record clock, tool version, routed slack and utilization. No candidate optimization until the independent holdout seal.
+- [ ] Implement an out-of-context Vivado flow for the exact Cora Z7-07S part; record clock, tool version, routed slack and utilization (#16). No candidate optimization until the independent holdout seal.
 - [ ] Validate Cora Z7-07S configuration and routed Vivado timing/resource reports.
-- [ ] Evaluate formal tools with a bounded feasibility experiment.
+- [ ] Establish executable protocol assertions and bounded formal equivalence of arithmetic/ownership/reset/backpressure against the reference; select formal tooling after a feasibility experiment. Do not claim proofs beyond the verified bounds.
+- [ ] Calibrate the software timing model against RTL traces and routed clock limits before ranking physical-performance candidates; report error and uncertainty.
 
 ## Phase 4: Hardware (week 3)
 
-- [ ] Verify finalist improvement on independent workloads; record model/RTL cycles, routed frequency and LUT/FF/BRAM/DSP usage.
+- [ ] Freeze finalist and baseline revisions; independently verify the withheld workloads and compare the same target, clock constraints, precision and input/output boundaries. Record model/RTL cycles, routed frequency and LUT/FF/BRAM/DSP usage; retain ablations and failed candidates.
 - [ ] Operator-approved physical test and reproducible evidence; distinguish estimated power from measured energy.
 
 ## Phase 5: Public Alpha (week 4)

@@ -7,9 +7,9 @@ An open-source, FPGA-first research platform for reproducible, AI-assisted proce
 
 Architecture Lab is an open-source research toolkit for investigating how computational workloads map to processor architectures. Its initial research target is arithmetic graph execution on a small FPGA. The goal is to make architecture experiments repeatable, comparable and inspectable, rather than to optimize a single benchmark or report unverified performance gains.
 
-**Research direction:** inspired by [Architect Labs’ Frostbite research](https://architectlabs.com/blog/frostbite): graph computation, fast executable models, independent verification and architecture exploration. This is an independent FPGA research project, not a Frostbite implementation or an ML accelerator. No Frostbite performance or power claims apply here.
+**Research direction:** inspired by [Architect Labs’ Frostbite research](https://architectlabs.com/blog/frostbite): graph computation, fast executable models, independent verification and architecture exploration. Frostbite uses dynamic interaction-net reduction and formal contracts; our initial core instead implements a restricted, static arithmetic DAG. This is an independent FPGA research project, not a Frostbite implementation or an ML accelerator. No Frostbite performance or power claims apply here.
 
-**Status:** early research software. The Rust model, deterministic scheduler and public development evaluator are implemented. Reviewer-side corpus validation and trusted baseline execution are implemented; a real independently sealed corpus, untrusted candidate execution, automated architecture search, routed FPGA implementation, formal verification and physical measurements are not yet available. A fixed one-lane SystemVerilog baseline and reproducible simulation workflow are implemented.
+**Status:** early research software. The Rust model, deterministic scheduler and public development evaluator are implemented. Reviewer-side corpus validation and trusted baseline execution are implemented; a real independently sealed corpus, untrusted candidate execution, automated architecture search, routed FPGA implementation, formal verification and physical measurements are not yet available. A fixed one-lane SystemVerilog baseline and reproducible simulation workflow are implemented and tested in CI.
 
 ## Research approach
 

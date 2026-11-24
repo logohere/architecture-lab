@@ -37,4 +37,5 @@ jobs:
       - run: npx --yes dotdog@1.0.0 validate
       - run: npx --yes dotdog@1.0.0 check --json
       - run: npx --yes dotdog@1.0.0 scenario-check Benchmark --project architecture-lab --json
+      - run: npx --yes dotdog@1.0.0 scenario-check "RTL baseline" --project architecture-lab --json
       - run: npx --yes dotdog@1.0.0 reference-check --project architecture-lab --json
