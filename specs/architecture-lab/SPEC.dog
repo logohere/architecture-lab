@@ -2,7 +2,7 @@
 
 ## Product
 
-A local-first, open-source toolkit for reproducible hardware architecture exploration. Start with a bounded arithmetic graph accelerator on Digilent Cora Z7-07S. Promote only verified candidates from software models to RTL and hardware.
+A local-first, open-source toolkit for reproducible FPGA architecture exploration. ASIC physical design and tapeout are out of scope. Start with a bounded arithmetic graph accelerator on Digilent Cora Z7-07S. Promote only verified candidates from software models to RTL and hardware.
 
 ## User Stories
 
@@ -16,7 +16,7 @@ A local-first, open-source toolkit for reproducible hardware architecture explor
 
 ## Architecture
 
-Workloads -> reference evaluator -> candidate search -> RTL verification -> synthesis and routing -> approved hardware test -> retained evidence.
+Workloads -> executable reference contracts -> fixed RTL baseline -> synthesis, routing and model calibration -> bounded candidate search -> repeated RTL/physical qualification -> independent evaluation and retained evidence.
 
 The implemented model is a topologically ordered arithmetic DAG with one consumer per non-root node, wrapping u32 addition and multiplication, and deterministic ready-node scheduling. Every node takes one modeled cycle. Memory and interconnect costs are not modeled. It is not a general interaction-net processor.
 
@@ -26,7 +26,7 @@ The reviewer-side corpus validator independently evaluates wrapping arithmetic w
 
 The fixed SystemVerilog baseline is a serial streaming implementation of the same one-lane arithmetic semantics. It is an FPGA execution core, not a general CPU or ML accelerator. The initial target is the Cora Z7-07S (XC7Z007S-1CLG400C); no board interface, synthesis, routing or physical test is implied.
 
-Planned components: independently sealed holdouts and untrusted candidate execution, candidate configuration, experiment ledger, routed RTL and board adapter. Rust and SystemVerilog first; adopt formal tools or compilers only after a justified evaluation. No mandatory hosted service or other personal repository.
+Planned components: independently sealed holdouts, calibrated cycle/cost model, untrusted candidate execution, candidate configuration, experiment ledger, routed RTL and board adapter. A hardware-comparable experiment must restrict inputs to the common supported envelope (currently at most 63 connected nodes for the fixed RTL core); larger software-only cases cannot be used for a direct FPGA comparison. Dynamic graph reduction, branching, recursion and distributed execution are separate research questions, not capabilities of the existing static DAG. Rust and SystemVerilog first; adopt formal tools or compilers only after a justified evaluation. No mandatory hosted service or other personal repository.
 
 ## Scenario: Benchmark
 
@@ -57,4 +57,4 @@ The trusted reviewer can append --baseline to the corpus validator command. It b
 3. Reset is synchronous active-high and abandons a partial Program or pending RtlResult. in_ready is low during reset or pending output. out_valid, out_error, out_value and out_nodes remain stable under backpressure until the result is accepted by out_ready. Error outputs have zero value and node count. The next transaction starts after retirement.
 4. For a valid graph, RtlResult out_value is the wrapping reference output and out_nodes is the accepted node count, equal to the one-lane modeled cycles without stalls. This is not elapsed wall-clock latency, a routed frequency measurement or evidence of throughput on a board.
 5. The public regression suite uses exported Rust Workload inputs and independently checked expected outputs and node counts. Directed tests cover wraparound, maximum-size connected graphs, consecutive accepted beats, malformed graphs, reset and output backpressure. No withheld corpus is used.
-6. The fixed RTL baseline may be built and tested before the approved CorpusSeal; candidate search and optimization remain gated on independent custody. The next hardware step is out-of-context Vivado implementation with a declared clock and retained timing/resource reports, followed by a board adapter. No bitstream programming without operator approval.
+6. The fixed RTL baseline may be built and tested before the approved CorpusSeal; candidate search and optimization remain gated on independent custody, verified baseline and model calibration. The next hardware step is out-of-context Vivado implementation with a declared clock and retained timing/resource reports, followed by a board adapter. No bitstream programming without operator approval.

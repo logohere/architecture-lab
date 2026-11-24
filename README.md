@@ -3,17 +3,17 @@
 [![CI](https://github.com/logohere/architecture-lab/actions/workflows/check.yml/badge.svg)](https://github.com/logohere/architecture-lab/actions/workflows/check.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
 
-An open-source, FPGA-first research platform for reproducible, AI-assisted processor architecture exploration.
+An open-source FPGA research platform for reproducible, AI-assisted processor architecture exploration.
 
 Architecture Lab is an open-source research toolkit for investigating how computational workloads map to processor architectures. Its initial research target is arithmetic graph execution on a small FPGA. The goal is to make architecture experiments repeatable, comparable and inspectable, rather than to optimize a single benchmark or report unverified performance gains.
 
-**Research direction:** inspired by [Architect Labs’ Frostbite research](https://architectlabs.com/blog/frostbite): graph computation, fast executable models, independent verification and architecture exploration. Frostbite uses dynamic interaction-net reduction and formal contracts; our initial core instead implements a restricted, static arithmetic DAG. This is an independent FPGA research project, not a Frostbite implementation or an ML accelerator. No Frostbite performance or power claims apply here.
+**Research direction:** inspired by [Architect Labs’ Frostbite research](https://architectlabs.com/blog/frostbite): graph computation, fast executable models, independent verification and architecture exploration. Frostbite uses dynamic interaction-net reduction and formal contracts; our initial core instead implements a restricted, static arithmetic DAG. This is an independent FPGA research project, not a Frostbite implementation or an ML accelerator. ASIC development is out of scope. No Frostbite performance or power claims apply here.
 
 **Status:** early research software. The Rust model, deterministic scheduler and public development evaluator are implemented. Reviewer-side corpus validation and trusted baseline execution are implemented; a real independently sealed corpus, untrusted candidate execution, automated architecture search, routed FPGA implementation, formal verification and physical measurements are not yet available. A fixed one-lane SystemVerilog baseline and reproducible simulation workflow are implemented and tested in CI.
 
 ## Research approach
 
-A reference model establishes expected behavior. Candidate architectures are evaluated against fixed workloads and promoted only when their correctness and evidence satisfy the project specification.
+A reference model establishes expected behavior. Candidate search follows baseline verification, model calibration and an independently sealed evaluation corpus. See the [implementation plan](specs/architecture-lab/plan.dog) for the evidence gates.
 
 ```mermaid
 flowchart LR
@@ -22,10 +22,11 @@ flowchart LR
     R --> E[Development evaluator]
     M --> E
     E --> B[Fixed RTL baseline]
-    B -. planned .-> V[RTL verification]
-    E -. planned .-> S[Candidate search]
-    S -. planned .-> V[RTL verification]
-    V -. planned .-> F[FPGA implementation]
+    B -. planned .-> C[Routing and calibration]
+    C -. planned .-> S[Candidate search]
+    H[Independent corpus seal] -. required .-> S
+    S -. planned .-> V[Candidate verification and routing]
+    V -. planned .-> F[FPGA evaluation]
 ```
 
 The current model executes a restricted arithmetic graph using unsigned 32-bit wrapping addition and multiplication. Each node has unit modeled latency and each non-root node has a single consumer. The scheduler executes ready nodes across a configurable number of lanes. It does not model memory, interconnect, physical timing or power.

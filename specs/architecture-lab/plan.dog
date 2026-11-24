@@ -6,41 +6,47 @@
 - [x] Apache-2.0 license, contributor and security policies.
 - [x] Hosted CI and public repository approval.
 
-## Phase 1: Evaluator (days 2–4)
+## Phase 1: Evaluation and contracts
 
 - [x] Freeze reference arithmetic and public development workloads; check fixed outputs and necessary cycle bounds (#4).
 - [x] Add negative controls and reference comparisons for public fixtures (#4).
 - [x] Implement reviewer-side corpus validation, public fixture separation checks and digest protocol (#5).
 - [x] Add a bounded input CLI and independently checked trusted baseline execution (#12).
-- [ ] Independent custodian prepares, isolates, verifies and seals a real withheld corpus before candidate search (#5).
+- [ ] Freeze the experiment scope and supported workload envelope. Distinguish independent work, staged reductions and serial dependencies; defer data-dependent branching and recursion until supported by executable semantics.
+- [ ] Before candidate search, an independent custodian seals a representative corpus in the same execution envelope as the intended baseline and candidates (#5). Keep software-only and FPGA-compatible cohorts separate.
+- [ ] Separate PR, post-merge and scheduled verification with a fail-closed required gate (#18).
 
-## Phase 2: Search (days 5–7)
-
-- [ ] Freeze workload categories and baseline comparison rules; add a bounded, deterministic candidate search and content-addressed experiment ledger only after the independent corpus seal.
-- [ ] Record the candidate hypothesis, parameter manifest, corpus/evaluator/RTL hashes, exact tool versions, seed, cycle counts, wall time, resources and all failures. Keep candidate worktrees isolated; evaluators remain reviewer-controlled.
-- [ ] Cap each batch at 100 software, 10 RTL and two routed candidates initially; agents propose structural changes, deterministic algorithms search parameters.
-
-## Phase 3: RTL (week 2)
+## Phase 2: Baseline and calibration
 
 - [x] Fixed single-lane SystemVerilog baseline, reference fixture comparison, reset/backpressure and malformed-input tests (#14).
-- [ ] Implement an out-of-context Vivado flow for the exact Cora Z7-07S part; record clock, tool version, routed slack and utilization (#16). No candidate optimization until the independent holdout seal.
-- [ ] Validate Cora Z7-07S configuration and routed Vivado timing/resource reports.
-- [ ] Establish executable protocol assertions and bounded formal equivalence of arithmetic/ownership/reset/backpressure against the reference; select formal tooling after a feasibility experiment. Do not claim proofs beyond the verified bounds.
-- [ ] Calibrate the software timing model against RTL traces and routed clock limits before ranking physical-performance candidates; report error and uncertainty.
+- [ ] Implement and run out-of-context Vivado synthesis, placement and routing for the exact Cora Z7-07S part (#16). Retain clock constraints, timing, utilization and failure evidence.
+- [ ] Add executable protocol assertions and bounded formal checks for arithmetic, ownership, reset and backpressure. Evaluate SymbiYosys against the existing RTL first; record assumptions, bounds and counterexamples.
+- [ ] Record deterministic execution traces and distinguish accepted nodes, compute cycles, stalls and transaction latency. Compare software predictions against RTL traces and routed clock constraints on the same public workloads.
+- [ ] Report calibration error and establish an evidence-backed acceptance threshold before using model predictions to select physical-performance candidates. Treat activity-based Vivado power estimates separately from measured energy; defer energy ranking until it has a defensible calibration.
 
-## Phase 4: Hardware (week 3)
+## Phase 3: Controlled architecture search
 
-- [ ] Freeze finalist and baseline revisions; independently verify the withheld workloads and compare the same target, clock constraints, precision and input/output boundaries. Record model/RTL cycles, routed frequency and LUT/FF/BRAM/DSP usage; retain ablations and failed candidates.
-- [ ] Operator-approved physical test and reproducible evidence; distinguish estimated power from measured energy.
+- [ ] Require frozen contracts, independent holdout seal, verified baseline and model calibration before search. Implement a deterministic candidate runner and content-addressed experiment ledger.
+- [ ] Begin with bounded scheduling, execution-lane and storage alternatives under the existing arithmetic semantics; do not add a new ISA or network merely to match a reference architecture.
+- [ ] Evaluate candidates in isolated worktrees. Preserve hypothesis, parameters, source/model/evaluator/constraint identities, tool versions, seed, results, failures and keep/drop decisions. Apply the same correctness, timing and resource gates to each candidate.
+- [ ] Cap each batch at 100 software, 10 RTL and two routed candidates initially; one Vivado run at a time. Recalibrate when behavior or cost models change. Keep the held-out set unavailable to optimization.
+- [ ] In a separate feasibility task, evaluate Vine/Ivy's graph semantics and a minimal dynamic graph-reduction prototype before expanding to control flow, recursion, runtime allocation or distributed tiles. If semantics change, freeze a new evaluation version and repeat the baseline/calibration gates.
 
-## Phase 5: Public Alpha (week 4)
+## Phase 4: Hardware evaluation
+
+- [ ] Integrate a minimal board adapter and obtain operator approval before programming the Cora Z7-07S. Verify I/O and repeatable capture against the reference.
+- [ ] Freeze finalist and baseline revisions before independent evaluation. Compare the same workload envelope, arithmetic semantics, I/O boundaries and device constraints; record modeled and RTL cycles, routed timing, LUT/FF/BRAM/DSP usage and separately labeled physical results.
+- [ ] Retain ablations and failed candidates. Distinguish measured FPGA energy from estimates.
+
+## Phase 5: Public Alpha
 
 - [ ] Locked build, tests, lint, CLI reproduction and graph integrity on supported hosts.
+- [ ] Publish only approved, reproducible public evidence; derive any execution visualization or experiment timeline from retained traces and ledger records, not simulated project history.
 - [ ] Review source for secrets, private data, upstream licenses and security risks.
 - [ ] Prepare the initial SemVer release PR, verify Cargo version and lockfile, date the changelog entry, and obtain maintainer approval for a matching immutable tag; publish tutorial and evidence (#9).
 - [ ] Validate demand with hardware researchers and small engineering teams; evaluate integration, custom optimization and support.
 
-Target windows are planning assumptions. Release a clearly labeled simulator alpha if hardware slips; no unverified performance or market-leadership claims. Defer custom ISA, OS, ASIC and full interaction-net runtime until justified.
+Milestones are evidence gates, not promised calendar dates. Release a clearly labeled simulator alpha if hardware slips. Defer a custom ISA, OS and full interaction-net runtime until justified. ASIC development is outside this roadmap.
 
 ## Verify
 
