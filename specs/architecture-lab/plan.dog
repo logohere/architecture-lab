@@ -4,12 +4,13 @@
 
 - [x] Rust arithmetic DAG and deterministic scheduler; tests and benchmark CLI.
 - [x] Apache-2.0 license, contributor and security policies.
-- [ ] Hosted CI and public release approval.
+- [x] Hosted CI and public repository approval.
 
 ## Phase 1: Evaluator (days 2–4)
 
-- [ ] Freeze reference semantics and benchmark workloads; separate holdouts.
-- [ ] Add negative controls and independent reference comparisons.
+- [x] Freeze reference arithmetic and public development workloads; check fixed outputs and necessary cycle bounds (#4).
+- [x] Add negative controls and reference comparisons for public fixtures (#4).
+- [ ] Establish an independently managed withheld evaluation protocol and corpus before candidate search (#5).
 
 ## Phase 2: Search (days 5–7)
 
@@ -46,3 +47,7 @@ properties: [nodes]
 ### Entity: Run
 file: src/lib.rs
 properties: [output, cycles]
+
+### Entity: Workload
+file: src/benchmarks.rs
+properties: [id, program, expected_output, node_count, critical_path]
