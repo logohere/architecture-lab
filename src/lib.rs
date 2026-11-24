@@ -1,4 +1,6 @@
 //! Single-owner arithmetic DAG and idealized unit-latency scheduler.
+
+pub mod benchmarks;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Node {
     Literal(u32),

@@ -41,3 +41,39 @@ verb: produces
 cardinality: 1:N
 required: true
 ```
+
+### Entity: Workload
+
+A fixed public development fixture. The identifier is unique within the suite; expected output, node count and critical path are immutable evaluation inputs.
+
+```yaml
+entity: Workload
+type: entity
+properties:
+  id:
+    type: string
+    required: true
+  program:
+    type: json
+    required: true
+  expected_output:
+    type: number
+    required: true
+  node_count:
+    type: number
+    required: true
+  critical_path:
+    type: number
+    required: true
+```
+
+### Relationship: Workload -> Program
+
+Each development workload defines one input program.
+
+```yaml
+relationship: Workload -> Program
+verb: defines
+cardinality: 1:1
+required: true
+```
