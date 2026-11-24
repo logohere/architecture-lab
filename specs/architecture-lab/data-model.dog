@@ -1,0 +1,10 @@
+# Data Model
+
+## Entities
+
+### Program
+- nodes: topologically ordered single-owner arithmetic graph
+
+### Run
+- output: u32
+- cycles: modeled cycle count

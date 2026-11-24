@@ -17,3 +17,7 @@ jobs:
       - run: cargo +1.97.1 clippy --locked --all-targets -- -D warnings
       - run: cargo +1.97.1 test --locked
       - run: cargo +1.97.1 run --locked -- bench
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - run: npx --yes dotdog@1.0.0 check --json

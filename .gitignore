@@ -5,3 +5,7 @@
 *.jou
 *.wdb
 *.dcp
+/.doghouse/
+/specs/**/*.dag
+/.agents/skills/dotdog/
+/.claude/skills/dotdog/
