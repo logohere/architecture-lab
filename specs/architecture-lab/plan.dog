@@ -11,6 +11,7 @@
 - [x] Freeze reference arithmetic and public development workloads; check fixed outputs and necessary cycle bounds (#4).
 - [x] Add negative controls and reference comparisons for public fixtures (#4).
 - [x] Implement reviewer-side corpus validation, public fixture separation checks and digest protocol (#5).
+- [x] Add a bounded input CLI and independently checked trusted baseline execution (#12).
 - [ ] Independent custodian prepares, isolates, verifies and seals a real withheld corpus before candidate search (#5).
 
 ## Phase 2: Search (days 5–7)
