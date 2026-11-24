@@ -46,6 +46,10 @@ impl Program {
         Ok(Self { nodes })
     }
 
+    pub fn nodes(&self) -> &[Node] {
+        &self.nodes
+    }
+
     pub fn reference(&self) -> u32 {
         let mut values: Vec<u32> = Vec::with_capacity(self.nodes.len());
         for node in &self.nodes {
