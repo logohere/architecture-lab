@@ -1,21 +1,58 @@
 # Architecture Lab
 
-**Reproducible hardware architecture exploration.**
+[![CI](https://github.com/logohere/architecture-lab/actions/workflows/check.yml/badge.svg)](https://github.com/logohere/architecture-lab/actions/workflows/check.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
 
-Architecture Lab is a local-first toolkit for developing and evaluating processor architectures.
+Reproducible hardware architecture exploration, from executable reference models to independently verified FPGA designs.
 
-## Quickstart
+Architecture Lab is an open-source research toolkit for investigating how computational workloads map to processor architectures. Its initial research target is arithmetic graph execution on a small FPGA. The goal is to make architecture experiments repeatable, comparable and inspectable, rather than to optimize a single benchmark or report unverified performance gains.
 
-Requires Rust 1.97.1 or newer.
+**Status:** early research software. The Rust model, deterministic scheduler and public development evaluator are implemented. Automated architecture search, independent withheld evaluation, RTL, formal verification and physical measurements are not yet implemented.
+
+## Research approach
+
+A reference model establishes expected behavior. Candidate architectures are evaluated against fixed workloads and promoted only when their correctness and evidence satisfy the project specification.
+
+```mermaid
+flowchart LR
+    W[Workloads] --> R[Reference semantics]
+    W --> M[Cycle model]
+    R --> E[Development evaluator]
+    M --> E
+    E -. planned .-> S[Candidate search]
+    S -. planned .-> V[RTL verification]
+    V -. planned .-> F[FPGA implementation]
+```
+
+The current model executes a restricted arithmetic graph using unsigned 32-bit wrapping addition and multiplication. Each node has unit modeled latency and each non-root node has a single consumer. The scheduler executes ready nodes across a configurable number of lanes. It does not model memory, interconnect, physical timing or power.
+
+See [SPEC.dog](specs/architecture-lab/SPEC.dog) for authoritative semantics and [constitution.dog](specs/architecture-lab/constitution.dog) for evidence and promotion rules.
+
+## Getting started
+
+### Requirements
+
+- Git and Rust 1.97.1 or newer, including Cargo.
+- Rustfmt and Clippy for development.
+- Bun 1.3+ or Node.js 22.12+ for the pinned Dotdog CLI.
+- No FPGA, proprietary EDA tool, cloud service or external Rust dependency is required for the current model.
+
+Clone and run:
 
 ```sh
+git clone https://github.com/logohere/architecture-lab.git
+cd architecture-lab
 cargo run --locked -- bench
 cargo test --locked
 ```
 
-The benchmark reports four public arithmetic workloads across 1, 2, 4 and 8 execution lanes:
+### Benchmark
 
-```text
+The public development suite contains mixed arithmetic, serial dependency chains, balanced reduction and integer wraparound workloads. Each is evaluated with 1, 2, 4 and 8 lanes.
+
+Example rows:
+
+```csv
 workload,lanes,output,modeled_cycles
 mixed,1,100,7
 mixed,2,100,4
@@ -23,14 +60,69 @@ mixed,4,100,3
 mixed,8,100,3
 ```
 
-These are idealized model cycles, not FPGA measurements.
+The output is CSV on standard output. Failures produce diagnostics on standard error and a nonzero exit code. To save the results:
 
-## Project status
+```sh
+cargo run --locked -- bench > benchmark.csv
+```
 
-Early research prototype. Arithmetic graph simulation and a public development evaluator work locally; independent holdouts, autonomous search, formal verification and FPGA implementation are planned.
+The evaluator checks independently specified outputs and necessary cycle bounds. These checks are not a proof of execution-trace correctness. Modeled cycle counts are not measured FPGA performance or estimates of silicon energy efficiency.
 
-[Specification](specs/architecture-lab/SPEC.dog) · [Roadmap](specs/architecture-lab/plan.dog) · [Engineering rules](specs/architecture-lab/constitution.dog) · [Contributing](CONTRIBUTING.md)
+## Hardware and tooling
+
+| Target | Status |
+|---|---|
+| Rust software model | Implemented |
+| Public development benchmark suite | Implemented |
+| Digilent Cora Z7-07S | Planned initial FPGA target |
+| SystemVerilog and Vivado | Planned RTL and implementation workflow |
+| Physical performance or power measurement | Not yet available |
+
+Hardware programming is not part of the current CLI or CI workflow. The repository does not require a specific vendor cloud service. Toolchain and target changes must be justified against the research goals.
+
+## Repository layout
+
+| Path | Purpose |
+|---|---|
+| `src/lib.rs` | Arithmetic graph validation, reference evaluation and scheduler |
+| `src/benchmarks.rs` | Fixed public development workloads and evaluator |
+| `src/main.rs` | Command-line benchmark interface |
+| `tests/` | Model, validation and evaluator tests |
+| `specs/architecture-lab/` | Canonical human-authored Dotdog specifications |
+| `.github/workflows/check.yml` | Rust and Dotdog verification |
+| [AGENTS.md](AGENTS.md) | Instructions for coding agents |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Contributor workflow and checks |
+
+## Specification-driven development
+
+[Dotdog](https://github.com/specdog/dotdog) 1.0.0 is the specification and graph tooling used by this project.
+
+| Specification | Responsibility |
+|---|---|
+| [SPEC.dog](specs/architecture-lab/SPEC.dog) | Product behavior, architecture and scenarios |
+| [data-model.dog](specs/architecture-lab/data-model.dog) | Entities, properties and relationships |
+| [constitution.dog](specs/architecture-lab/constitution.dog) | Research integrity, security and engineering constraints |
+| [plan.dog](specs/architecture-lab/plan.dog) | Implementation phases and completion criteria |
+
+From the repository root:
+
+```sh
+bunx dotdog@1.0.0 refresh --if-stale --json
+bunx dotdog@1.0.0 query Program
+bunx dotdog@1.0.0 validate
+bunx dotdog@1.0.0 check --json
+```
+
+With npm, substitute `npx --yes dotdog@1.0.0` for `bunx dotdog@1.0.0`. Generated graph artifacts are local and excluded from version control. Dotdog checks complement Rust tests; they are not a substitute for tests or formal verification.
+
+## Contributing
+
+Start with the [implementation plan](specs/architecture-lab/plan.dog) and [open issues](https://github.com/logohere/architecture-lab/issues). Discuss scope in an issue, make a focused branch, and open a pull request with tests and reproducible evidence. Update the relevant specifications with any intentional change to behavior.
+
+AI-assisted contributors should follow [AGENTS.md](AGENTS.md). Claude Code can discover the same instructions through [CLAUDE.md](CLAUDE.md). Human and agent contributions follow the same review and verification requirements.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the complete local verification workflow, [SECURITY.md](SECURITY.md) for vulnerability reporting, and [CHANGELOG.md](CHANGELOG.md) for changes.
 
 ## License
 
-Apache-2.0. See [LICENSE](LICENSE).
+Apache License 2.0. See [LICENSE](LICENSE). Contributions are accepted under the same license.
