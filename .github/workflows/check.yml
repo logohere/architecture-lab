@@ -1,41 +1,162 @@
-name: Rust checks
+name: Verification
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '27 4 * * *'
   push:
+    branches: [main]
     tags: ['v*']
   pull_request:
-    types: [opened, reopened, synchronize, ready_for_review]
+    branches: [main]
+    types: [opened, reopened, synchronize, ready_for_review, converted_to_draft]
+
 permissions:
   contents: read
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+env:
+  RUSTUP_TOOLCHAIN: '1.97.1'
+  CARGO_TERM_COLOR: never
+  CARGO_INCREMENTAL: '0'
+
 jobs:
-  check:
-    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
-    runs-on: ubuntu-latest
+  rust:
+    name: Rust and evaluator
+    if: ${{ github.event_name != 'pull_request' || !github.event.pull_request.draft }}
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
-    env:
-      RUSTUP_TOOLCHAIN: '1.97.1'
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - run: rustup toolchain install 1.97.1 --profile minimal --component rustfmt --component clippy
-      - run: cargo +1.97.1 fmt --check
-      - run: cargo +1.97.1 clippy --locked --all-targets -- -D warnings
-      - run: cargo +1.97.1 test --locked
-      - run: cargo +1.97.1 run --locked -- bench
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - run: cargo fmt --check
+      - run: cargo clippy --locked --all-targets -- -D warnings
+      - run: cargo test --locked
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: '24'
-      - name: Install RTL simulator
-        run: sudo apt-get update && sudo apt-get install -y iverilog
-      - run: node scripts/check-rtl.mjs
+          node-version: '24.22.3'
+          package-manager-cache: false
       - run: node scripts/check-release.mjs
       - run: node --test scripts/check-release.test.mjs scripts/verify-holdout.test.mjs
+      - name: Capture public benchmark and build identity
+        run: |
+          set -euo pipefail
+          git rev-parse HEAD > "$RUNNER_TEMP/model-tools.txt"
+          rustc -Vv >> "$RUNNER_TEMP/model-tools.txt"
+          node --version >> "$RUNNER_TEMP/model-tools.txt"
+          cargo run --locked --quiet -- bench | tee "$RUNNER_TEMP/benchmark.csv"
+      - name: Retain public verification evidence
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: model-evidence-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/model-tools.txt
+            ${{ runner.temp }}/benchmark.csv
+          if-no-files-found: warn
+          retention-days: 14
+  rtl:
+    name: RTL simulation
+    if: ${{ github.event_name != 'pull_request' || !github.event.pull_request.draft }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: rustup toolchain install 1.97.1 --profile minimal
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24.22.3'
+          package-manager-cache: false
+      - name: Install Icarus Verilog
+        run: sudo apt-get update && sudo apt-get install -y iverilog
+      - name: Simulate against public reference
+        run: |
+          set -euo pipefail
+          git rev-parse HEAD > "$RUNNER_TEMP/rtl-tools.txt"
+          rustc -Vv >> "$RUNNER_TEMP/rtl-tools.txt"
+          node --version >> "$RUNNER_TEMP/rtl-tools.txt"
+          iverilog -V >> "$RUNNER_TEMP/rtl-tools.txt" 2>&1
+          node scripts/check-rtl.mjs 2>&1 | tee "$RUNNER_TEMP/rtl-simulation.txt"
+      - name: Retain public verification evidence
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: rtl-evidence-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/rtl-tools.txt
+            ${{ runner.temp }}/rtl-simulation.txt
+          if-no-files-found: warn
+          retention-days: 14
+  specs:
+    name: Specification integrity
+    if: ${{ github.event_name != 'pull_request' || !github.event.pull_request.draft }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24.22.3'
+          package-manager-cache: false
       - run: npx --yes dotdog@1.0.0 validate
       - run: npx --yes dotdog@1.0.0 check --json
       - run: npx --yes dotdog@1.0.0 scenario-check Benchmark --project architecture-lab --json
       - run: npx --yes dotdog@1.0.0 scenario-check "RTL baseline" --project architecture-lab --json
       - run: npx --yes dotdog@1.0.0 reference-check --project architecture-lab --json
+
+  portability:
+    name: Portability (${{ matrix.os }})
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/') }}
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        os: [windows-2025, macos-15]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: rustup toolchain install 1.97.1 --profile minimal
+      - run: cargo test --locked --release
+      - run: cargo run --locked --release -- bench
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24.22.3'
+          package-manager-cache: false
+      - run: node --test scripts/check-release.test.mjs scripts/verify-holdout.test.mjs
+
+  check:
+    # Stable required context: do not rename without updating branch protection.
+    if: ${{ always() && (github.event_name != 'pull_request' || !github.event.pull_request.draft) }}
+    needs: [rust, rtl, specs, portability]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    permissions: {}
+    steps:
+      - name: Enforce required verification
+        shell: bash
+        env:
+          RUST_RESULT: ${{ needs.rust.result }}
+          RTL_RESULT: ${{ needs.rtl.result }}
+          SPEC_RESULT: ${{ needs.specs.result }}
+          PORTABILITY_RESULT: ${{ needs.portability.result }}
+          EXTENDED: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/') }}
+        run: |
+          set -euo pipefail
+          printf 'Rust: %s\nRTL: %s\nSpecs: %s\nPortability: %s\n' "$RUST_RESULT" "$RTL_RESULT" "$SPEC_RESULT" "$PORTABILITY_RESULT"
+          test "$RUST_RESULT" = success
+          test "$RTL_RESULT" = success
+          test "$SPEC_RESULT" = success
+          if [[ "$EXTENDED" == true ]]; then
+            test "$PORTABILITY_RESULT" = success
+          else
+            test "$PORTABILITY_RESULT" = skipped
+          fi

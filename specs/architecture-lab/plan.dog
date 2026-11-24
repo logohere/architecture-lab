@@ -14,7 +14,7 @@
 - [x] Add a bounded input CLI and independently checked trusted baseline execution (#12).
 - [ ] Freeze the experiment scope and supported workload envelope. Distinguish independent work, staged reductions and serial dependencies; defer data-dependent branching and recursion until supported by executable semantics.
 - [ ] Before candidate search, an independent custodian seals a representative corpus in the same execution envelope as the intended baseline and candidates (#5). Keep software-only and FPGA-compatible cohorts separate.
-- [ ] Separate PR, post-merge and scheduled verification with a fail-closed required gate (#18).
+- [x] Separate PR, post-merge and scheduled verification with a fail-closed required gate (#18).
 
 ## Phase 2: Baseline and calibration
 
