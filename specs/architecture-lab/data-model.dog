@@ -102,3 +102,22 @@ properties:
     type: string
     required: true
 ```
+
+### Entity: RtlResult
+
+Fixed core output transaction. out_nodes is accepted node beats, not elapsed hardware cycles.
+
+```yaml
+entity: RtlResult
+type: entity
+properties:
+  out_value:
+    type: number
+    required: true
+  out_nodes:
+    type: number
+    required: true
+  out_error:
+    type: boolean
+    required: true
+```

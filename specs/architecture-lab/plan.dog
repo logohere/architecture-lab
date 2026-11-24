@@ -22,7 +22,8 @@
 
 ## Phase 3: RTL (week 2)
 
-- [ ] SystemVerilog baseline, independent reference comparison, reset/backpressure tests.
+- [x] Fixed single-lane SystemVerilog baseline, reference fixture comparison, reset/backpressure and malformed-input tests (#14).
+- [ ] Implement an out-of-context Vivado flow for the exact Cora Z7-07S part; record clock, tool version, routed slack and utilization. No candidate optimization until the independent holdout seal.
 - [ ] Validate Cora Z7-07S configuration and routed Vivado timing/resource reports.
 - [ ] Evaluate formal tools with a bounded feasibility experiment.
 
@@ -57,3 +58,7 @@ properties: [id, program, expected_output, node_count, critical_path]
 ### Entity: CorpusSeal
 file: scripts/verify-holdout.mjs
 properties: [schema, case_count, corpus_sha256, evaluator_sha256, public_suite_sha256]
+
+### Entity: RtlResult
+file: rtl/arithmetic_engine.sv
+properties: [out_value, out_nodes, out_error]

@@ -29,6 +29,9 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
+      - name: Install RTL simulator
+        run: sudo apt-get update && sudo apt-get install -y iverilog
+      - run: node scripts/check-rtl.mjs
       - run: node scripts/check-release.mjs
       - run: node --test scripts/check-release.test.mjs scripts/verify-holdout.test.mjs
       - run: npx --yes dotdog@1.0.0 validate
