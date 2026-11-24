@@ -41,6 +41,7 @@ cargo fmt --check
 cargo clippy --locked --all-targets -- -D warnings
 cargo test --locked
 cargo run --locked -- bench
+node scripts/check-rtl.mjs
 bunx dotdog@1.0.0 validate
 bunx dotdog@1.0.0 check --json
 bunx dotdog@1.0.0 scenario-check Benchmark --project architecture-lab --json
@@ -48,9 +49,14 @@ bunx dotdog@1.0.0 reference-check --project architecture-lab --json
 git diff --check
 ```
 
-After staging, run `bunx dotdog@1.0.0 check --staged --json`. The npx equivalent is `npx --yes dotdog@1.0.0` followed by the same arguments. If a check cannot run locally, state why and use hosted CI where applicable.
+After staging, run `bunx dotdog@1.0.0 check --staged --json`. The npx equivalent is `npx --yes dotdog@1.0.0` followed by the same arguments. The RTL regression requires Icarus Verilog (iverilog and vvp). If a check cannot run locally, state why and use hosted CI where applicable.
 
 Dotdog structural and lexical checks do not prove runtime correctness. Report unresolved references, incomplete graph coverage, failing tests and experimental limitations. Do not fabricate results or declare hardware support without evidence.
+
+## Review evidence
+
+- Where available, use independent local research/code-analysis tools to check requirements, risk, scope and regression evidence. Treat their findings as advisory; a static score, generated review or graph check does not establish functional or formal correctness. Keep private knowledge and local tool paths out of the public repository; optional review tools must not become build dependencies.
+- Trace every changed requirement to a runnable positive or negative test, retain the actual command and result in the PR, and distinguish code review from RTL simulation, formal verification and physical measurement.
 
 ## Deliver
 

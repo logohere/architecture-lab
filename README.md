@@ -3,11 +3,13 @@
 [![CI](https://github.com/logohere/architecture-lab/actions/workflows/check.yml/badge.svg)](https://github.com/logohere/architecture-lab/actions/workflows/check.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
 
-Reproducible hardware architecture exploration, from executable reference models to independently verified FPGA designs.
+An open-source, FPGA-first research platform for reproducible, AI-assisted processor architecture exploration.
 
 Architecture Lab is an open-source research toolkit for investigating how computational workloads map to processor architectures. Its initial research target is arithmetic graph execution on a small FPGA. The goal is to make architecture experiments repeatable, comparable and inspectable, rather than to optimize a single benchmark or report unverified performance gains.
 
-**Status:** early research software. The Rust model, deterministic scheduler and public development evaluator are implemented. Reviewer-side corpus validation and trusted baseline execution are implemented; a real independently sealed corpus, untrusted candidate execution, automated architecture search, RTL, formal verification and physical measurements are not yet available.
+**Research direction:** inspired by [Architect Labs’ Frostbite research](https://architectlabs.com/blog/frostbite): graph computation, fast executable models, independent verification and architecture exploration. Frostbite uses dynamic interaction-net reduction and formal contracts; our initial core instead implements a restricted, static arithmetic DAG. This is an independent FPGA research project, not a Frostbite implementation or an ML accelerator. No Frostbite performance or power claims apply here.
+
+**Status:** early research software. The Rust model, deterministic scheduler and public development evaluator are implemented. Reviewer-side corpus validation and trusted baseline execution are implemented; a real independently sealed corpus, untrusted candidate execution, automated architecture search, routed FPGA implementation, formal verification and physical measurements are not yet available. A fixed one-lane SystemVerilog baseline and reproducible simulation workflow are implemented and tested in CI.
 
 ## Research approach
 
@@ -19,6 +21,8 @@ flowchart LR
     W --> M[Cycle model]
     R --> E[Development evaluator]
     M --> E
+    E --> B[Fixed RTL baseline]
+    B -. planned .-> V[RTL verification]
     E -. planned .-> S[Candidate search]
     S -. planned .-> V[RTL verification]
     V -. planned .-> F[FPGA implementation]
@@ -78,14 +82,25 @@ The result is `5,2` under the `output,modeled_cycles` header. Reviewers can appe
 
 The evaluator checks independently specified outputs and necessary cycle bounds. These checks are not a proof of execution-trace correctness. Modeled cycle counts are not measured FPGA performance or estimates of silicon energy efficiency.
 
+## RTL baseline
+
+The fixed streaming core implements one arithmetic node per accepted input beat for graphs of up to 63 connected nodes. It uses a valid/ready interface and validates operand ownership. Simulate against the Rust public suite and directed negative controls using Icarus Verilog (iverilog and vvp on PATH) and Node.js:
+
+```sh
+node scripts/check-rtl.mjs
+```
+
+See [the RTL contract](specs/architecture-lab/SPEC.dog#scenario-rtl-baseline). This is behavioral simulation, not synthesis, routing or a measured FPGA benchmark.
+
 ## Hardware and tooling
 
 | Target | Status |
 |---|---|
 | Rust software model | Implemented |
 | Public development benchmark suite | Implemented |
-| Digilent Cora Z7-07S | Planned initial FPGA target |
-| SystemVerilog and Vivado | Planned RTL and implementation workflow |
+| Fixed single-lane SystemVerilog core | Implemented; behavioral simulation in CI |
+| [Digilent Cora Z7-07S](https://digilent.com/shop/cora-z7-zynq-7000-single-core-for-arm-fpga-soc-development/) | Target: XC7Z007S-1CLG400C; board integration pending |
+| Vivado out-of-context implementation | Planned timing and resource verification |
 | Physical performance or power measurement | Not yet available |
 
 Hardware programming is not part of the current CLI or CI workflow. The repository does not require a specific vendor cloud service. Toolchain and target changes must be justified against the research goals.
@@ -98,6 +113,8 @@ Hardware programming is not part of the current CLI or CI workflow. The reposito
 | `src/benchmarks.rs` | Fixed public development workloads and evaluator |
 | `src/main.rs` | Command-line benchmark interface |
 | `tests/` | Model, validation and evaluator tests |
+| `rtl/` | Fixed FPGA baseline and SystemVerilog testbench |
+| `scripts/check-rtl.mjs` | Rust-derived simulation vectors and RTL verification |
 | `specs/architecture-lab/` | Canonical human-authored Dotdog specifications |
 | `.github/workflows/check.yml` | Rust and Dotdog verification |
 | [AGENTS.md](AGENTS.md) | Instructions for coding agents |
