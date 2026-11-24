@@ -1,0 +1,7 @@
+/target/
+/experiments/runs/
+.env
+*.bit
+*.jou
+*.wdb
+*.dcp

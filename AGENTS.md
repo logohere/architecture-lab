@@ -1,0 +1,3 @@
+# Agent instructions
+
+Read README and docs/roadmap.md. Work on feature branches. Keep evaluator and holdouts independent of candidate agents. Use tests before expensive EDA runs; retain source and tool identities, failures and evidence. Do not invent measurements, run unbounded experiments, program hardware, incur paid compute or publish without approval. No unnecessary dependencies or references. Follow CONTRIBUTING.md and preserve upstream license notices.
