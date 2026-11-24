@@ -15,6 +15,8 @@ jobs:
     if: github.event_name != 'pull_request' || !github.event.pull_request.draft
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      RUSTUP_TOOLCHAIN: '1.97.1'
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -28,7 +30,7 @@ jobs:
         with:
           node-version: '24'
       - run: node scripts/check-release.mjs
-      - run: node --test scripts/check-release.test.mjs
+      - run: node --test scripts/check-release.test.mjs scripts/verify-holdout.test.mjs
       - run: npx --yes dotdog@1.0.0 validate
       - run: npx --yes dotdog@1.0.0 check --json
       - run: npx --yes dotdog@1.0.0 scenario-check Benchmark --project architecture-lab --json

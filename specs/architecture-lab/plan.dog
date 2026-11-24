@@ -10,7 +10,8 @@
 
 - [x] Freeze reference arithmetic and public development workloads; check fixed outputs and necessary cycle bounds (#4).
 - [x] Add negative controls and reference comparisons for public fixtures (#4).
-- [ ] Establish an independently managed withheld evaluation protocol and corpus before candidate search (#5).
+- [x] Implement reviewer-side corpus validation, public fixture separation checks and digest protocol (#5).
+- [ ] Independent custodian prepares, isolates, verifies and seals a real withheld corpus before candidate search (#5).
 
 ## Phase 2: Search (days 5–7)
 
@@ -51,3 +52,7 @@ properties: [output, cycles]
 ### Entity: Workload
 file: src/benchmarks.rs
 properties: [id, program, expected_output, node_count, critical_path]
+
+### Entity: CorpusSeal
+file: scripts/verify-holdout.mjs
+properties: [schema, case_count, corpus_sha256, evaluator_sha256, public_suite_sha256]

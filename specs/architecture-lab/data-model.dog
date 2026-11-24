@@ -77,3 +77,28 @@ verb: defines
 cardinality: 1:1
 required: true
 ```
+
+### Entity: CorpusSeal
+
+Reviewer evidence identifying a validated corpus, evaluator and public suite. A separate custodian approval and source/tool provenance are required before treating it as a frozen evaluation baseline.
+
+```yaml
+entity: CorpusSeal
+type: entity
+properties:
+  schema:
+    type: string
+    required: true
+  case_count:
+    type: number
+    required: true
+  corpus_sha256:
+    type: string
+    required: true
+  evaluator_sha256:
+    type: string
+    required: true
+  public_suite_sha256:
+    type: string
+    required: true
+```

@@ -7,7 +7,7 @@ Reproducible hardware architecture exploration, from executable reference models
 
 Architecture Lab is an open-source research toolkit for investigating how computational workloads map to processor architectures. Its initial research target is arithmetic graph execution on a small FPGA. The goal is to make architecture experiments repeatable, comparable and inspectable, rather than to optimize a single benchmark or report unverified performance gains.
 
-**Status:** early research software. The Rust model, deterministic scheduler and public development evaluator are implemented. Automated architecture search, independent withheld evaluation, RTL, formal verification and physical measurements are not yet implemented.
+**Status:** early research software. The Rust model, deterministic scheduler and public development evaluator are implemented. Reviewer-side corpus validation is implemented; a real independently sealed corpus, candidate execution, automated architecture search, RTL, formal verification and physical measurements are not yet available.
 
 ## Research approach
 
@@ -65,6 +65,8 @@ The output is CSV on standard output. Failures produce diagnostics on standard e
 ```sh
 cargo run --locked -- bench > benchmark.csv
 ```
+
+The public benchmark inputs can also be exported with `cargo run --locked -- bench-inputs`. Reviewers can validate an externally controlled corpus using `node scripts/verify-holdout.mjs <external-corpus.json>`; the custody and seal requirements are defined in [SPEC.dog](specs/architecture-lab/SPEC.dog). No actual private corpus is distributed.
 
 The evaluator checks independently specified outputs and necessary cycle bounds. These checks are not a proof of execution-trace correctness. Modeled cycle counts are not measured FPGA performance or estimates of silicon energy efficiency.
 
