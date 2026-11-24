@@ -2,9 +2,42 @@
 
 ## Entities
 
-### Program
-- nodes: topologically ordered single-owner arithmetic graph
+### Entity: Program
 
-### Run
-- output: u32
-- cycles: modeled cycle count
+Implemented arithmetic graph; every non-root node has exactly one consumer.
+
+```yaml
+entity: Program
+type: entity
+properties:
+  nodes:
+    type: json
+    required: true
+```
+
+### Entity: Run
+
+Implemented simulation result; cycles are modeled, not measured.
+
+```yaml
+entity: Run
+type: entity
+properties:
+  output:
+    type: number
+    required: true
+  cycles:
+    type: number
+    required: true
+```
+
+### Relationship: Program -> Run
+
+A program may produce multiple runs for different lane counts.
+
+```yaml
+relationship: Program -> Run
+verb: produces
+cardinality: 1:N
+required: true
+```

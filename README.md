@@ -2,7 +2,7 @@
 
 **Reproducible hardware architecture exploration.**
 
-Architecture Lab is a local-first toolkit for developing and evaluating processor architectures. Start with a deterministic reference model, explore candidates, and promote independently verified designs to FPGA hardware.
+Architecture Lab is a local-first toolkit for developing and evaluating processor architectures.
 
 ## Quickstart
 
@@ -26,9 +26,9 @@ These are idealized model cycles, not FPGA measurements.
 
 ## Project status
 
-Early research prototype. The arithmetic DAG model and scheduler run locally. Automated search, full graph reduction, formal verification and Cora Z7-07S RTL are planned, not implemented.
+Early research prototype. Arithmetic graph simulation works locally; autonomous search, formal verification and FPGA implementation are planned.
 
-[Architecture](docs/architecture.md) · [Roadmap](docs/roadmap.md) · [Evaluation](docs/evaluation.md) · [Contributing](CONTRIBUTING.md)
+[Specification](specs/architecture-lab/SPEC.dog) · [Roadmap](specs/architecture-lab/plan.dog) · [Engineering rules](specs/architecture-lab/constitution.dog) · [Contributing](CONTRIBUTING.md)
 
 ## License
 
