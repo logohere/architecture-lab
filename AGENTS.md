@@ -41,10 +41,12 @@ cargo fmt --check
 cargo clippy --locked --all-targets -- -D warnings
 cargo test --locked
 cargo run --locked -- bench
+node --test scripts/check-release.test.mjs scripts/verify-holdout.test.mjs
 node scripts/check-rtl.mjs
 bunx dotdog@1.0.0 validate
 bunx dotdog@1.0.0 check --json
 bunx dotdog@1.0.0 scenario-check Benchmark --project architecture-lab --json
+bunx dotdog@1.0.0 scenario-check "RTL baseline" --project architecture-lab --json
 bunx dotdog@1.0.0 reference-check --project architecture-lab --json
 git diff --check
 ```
