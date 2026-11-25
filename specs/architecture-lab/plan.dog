@@ -19,7 +19,8 @@
 ## Phase 2: Baseline and calibration
 
 - [x] Fixed single-lane SystemVerilog baseline, reference fixture comparison, reset/backpressure and malformed-input tests (#14).
-- [ ] Implement and run out-of-context Vivado synthesis, placement and routing for the exact Cora Z7-07S part (#16). Retain clock constraints, timing, utilization and failure evidence.
+- [x] Implement the local out-of-context Vivado batch flow and orchestration tests (#16).
+- [ ] Run actual Vivado synthesis, placement and routing for the exact Cora Z7-07S part (#16). Retain clock constraints, timing, utilization and failure evidence; review unconstrained paths and DRC.
 - [ ] Add executable protocol assertions and bounded formal checks for arithmetic, ownership, reset and backpressure. Evaluate SymbiYosys against the existing RTL first; record assumptions, bounds and counterexamples.
 - [ ] Record deterministic execution traces and distinguish accepted nodes, compute cycles, stalls and transaction latency. Compare software predictions against RTL traces and routed clock constraints on the same public workloads.
 - [ ] Report calibration error and establish an evidence-backed acceptance threshold before using model predictions to select physical-performance candidates. Treat activity-based Vivado power estimates separately from measured energy; defer energy ranking until it has a defensible calibration.
