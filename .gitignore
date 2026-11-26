@@ -9,3 +9,5 @@
 /specs/**/*.dag
 /.agents/skills/dotdog/
 /.claude/skills/dotdog/
+/.Xil/
+/vivado*.log

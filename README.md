@@ -93,6 +93,18 @@ node scripts/check-rtl.mjs
 
 See [the RTL contract](specs/architecture-lab/SPEC.dog#scenario-rtl-baseline). This is behavioral simulation, not synthesis, routing or a measured FPGA benchmark.
 
+## Local FPGA implementation
+
+With AMD Vivado (Zynq-7000 device support), Git and Node.js on PATH, run the fixed core out of context from the repository root:
+
+```sh
+vivado -mode batch -nolog -nojournal -source fpga/vivado/ooc.tcl -tclargs 20
+```
+
+The initial 20 ns clock target is an engineering assumption (50 MHz), not a measured frequency. The flow targets `xc7z007sclg400-1`, limits Vivado to four threads and prevents concurrent runs through a per-user lock. Each ignored `experiments/runs/` directory retains source and constraint hashes, tool identity, stage/error status, checkpoints, utilization, route status, and timing including unconstrained paths. For full console output, use a unique external log path with Vivado's `-log` option instead of `-nolog`. A stale `.architecture-lab-vivado.lock` in the home directory must only be removed after confirming no run is active. Review the raw reports, including I/O constraints and DRC, before accepting evidence. No board timing, bitstream or physical test is implied.
+
+The orchestration tests use Tcl command doubles, not Vivado: `node --test scripts/check-vivado-flow.test.mjs` (requires `tclsh`). Actual synthesis and routing remain unverified.
+
 ## Hardware and tooling
 
 | Target | Status |
@@ -101,7 +113,7 @@ See [the RTL contract](specs/architecture-lab/SPEC.dog#scenario-rtl-baseline). T
 | Public development benchmark suite | Implemented |
 | Fixed single-lane SystemVerilog core | Implemented; behavioral simulation in CI |
 | [Digilent Cora Z7-07S](https://digilent.com/shop/cora-z7-zynq-7000-single-core-for-arm-fpga-soc-development/) | Target: XC7Z007S-1CLG400C; board integration pending |
-| Vivado out-of-context implementation | Planned timing and resource verification |
+| Vivado out-of-context implementation | Batch flow implemented; actual routing evidence pending |
 | Physical performance or power measurement | Not yet available |
 
 Hardware programming is not part of the current CLI or CI workflow. The repository does not require a specific vendor cloud service. Toolchain and target changes must be justified against the research goals.

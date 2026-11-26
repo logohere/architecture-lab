@@ -72,7 +72,8 @@ jobs:
           node-version: '24.22.3'
           package-manager-cache: false
       - name: Install Icarus Verilog
-        run: sudo apt-get update && sudo apt-get install -y iverilog
+        run: sudo apt-get update && sudo apt-get install -y iverilog tcl
+      - run: node --test scripts/check-vivado-flow.test.mjs
       - name: Simulate against public reference
         run: |
           set -euo pipefail
