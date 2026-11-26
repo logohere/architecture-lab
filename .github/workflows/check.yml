@@ -105,6 +105,8 @@ jobs:
         with:
           node-version: '24.22.3'
           package-manager-cache: false
+      - run: node --test scripts/check-public-source.test.mjs
+      - run: node scripts/check-public-source.mjs
       - run: npx --yes dotdog@1.0.0 validate
       - run: npx --yes dotdog@1.0.0 check --json
       - run: npx --yes dotdog@1.0.0 scenario-check Benchmark --project architecture-lab --json

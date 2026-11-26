@@ -17,7 +17,7 @@ const fixture = (fn) => {
     mkdirSync(join(root, "rtl"));
     copyFileSync("fpga/vivado/ooc.tcl", flow);
     copyFileSync("rtl/arithmetic_engine.sv", join(root, "rtl", "arithmetic_engine.sv"));
-    execFileSync("git", ["init", "-q", root]);
+    execFileSync("git", ["init", "-q", "--template=", root]);
     execFileSync("git", ["-C", root, "-c", "user.name=Test", "-c", "user.email=test@example.invalid", "commit", "--allow-empty", "-qm", "test"]);
     const lock = join(home, ".architecture-lab-vivado.lock");
     const runs = join(root, "experiments", "runs");

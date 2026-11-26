@@ -29,7 +29,7 @@ bunx dotdog@1.0.0 reference-check --project architecture-lab --json
 git diff --check
 ```
 
-After staging, run `bunx dotdog@1.0.0 check --staged --json`. Node users may use `npx --yes dotdog@1.0.0` instead.
+After staging, run `bunx dotdog@1.0.0 check --staged --json` and `node scripts/check-public-source.mjs`. Node users may use `npx --yes dotdog@1.0.0` instead.
 
 ## Submit a pull request
 
@@ -41,6 +41,6 @@ Main requires pull requests and the required check named `check`. The Verificati
 
 Do not change the evaluator to rescue a candidate. Report negative results as well as successes. Separate simulated, synthesized and physically measured results. Follow the execution budgets and evidence rules in the [constitution](specs/architecture-lab/constitution.dog).
 
-Do not commit generated Dotdog graphs, private inputs, secrets, large binaries or proprietary device data. Add third-party code only when necessary and preserve its license and required notices.
+Do not commit generated Dotdog graphs, private inputs, secrets, large binaries or proprietary device data. Review the [public evidence policy](SECURITY.md) before uploading logs or screenshots. Use GitHub's noreply address for private commit email; never include workstation-specific paths in contributions. Add third-party code only when necessary and preserve its license and required notices.
 
 Contributions are licensed under Apache-2.0. Report security vulnerabilities using [SECURITY.md](SECURITY.md).
