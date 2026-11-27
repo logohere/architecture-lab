@@ -91,7 +91,7 @@ The fixed streaming core implements one arithmetic node per accepted input beat 
 node scripts/check-rtl.mjs
 ```
 
-See [the RTL contract](specs/architecture-lab/SPEC.dog#scenario-rtl-baseline). This is behavioral simulation, not synthesis, routing or a measured FPGA benchmark.
+The simulation monitor checks the interface on every clock edge. Each public graph runs with consecutive beats and with two idle input cycles between beats, under three cycles of output backpressure. To retain independently checked, machine-independent simulation counters, use `node scripts/check-rtl.mjs --timing-csv rtl-timing.csv` (new output file only). Cycle intervals are inclusive of their first and last sampled edges. See [the RTL contract](specs/architecture-lab/SPEC.dog#scenario-rtl-baseline). This is behavioral simulation, not synthesis, routing or a measured FPGA benchmark.
 
 ## Local FPGA implementation
 

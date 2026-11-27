@@ -1,7 +1,11 @@
-import { execFileSync } from "node:child_process";
-import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { execFileSync, spawnSync } from "node:child_process";
+import { mkdtempSync, writeFileSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { verifyTiming } from "./rtl-timing.mjs";
+
+const args = process.argv.slice(2);
+if (args.length && (args.length !== 2 || args[0] !== "--timing-csv")) throw new Error("Usage: node scripts/check-rtl.mjs [--timing-csv OUTPUT]");
 
 const run = (cmd, args) => execFileSync(cmd, args, { encoding: "utf8", timeout: 60000, maxBuffer: 1024 * 1024 });
 const inputs = run("cargo", ["run", "--locked", "--quiet", "--", "bench-inputs"]).trim().split(/\r?\n/);
@@ -30,7 +34,26 @@ try {
   const executable = join(dir, "arithmetic.vvp");
   writeFileSync(input, `${vectors.length}\n${vectors.join("\n")}\n`);
   run("iverilog", ["-g2012", "-s", "arithmetic_engine_tb", "-o", executable, "rtl/arithmetic_engine.sv", "rtl/tb/arithmetic_engine_tb.sv"]);
-  console.log(run("vvp", [executable, `+vectors=${input}`]).trim());
+  const output = run("vvp", [executable, `+vectors=${input}`]).trim();
+  const workloads = [...inputs.map((line) => {
+    const id = line.split("|")[0];
+    return { id, cycles: expected.get(id)[1] };
+  }), { id: "max_graph", cycles: 63 }, { id: "wrap_multiply", cycles: 3 }];
+  const csv = verifyTiming(output, workloads);
+  // A deliberately broken temporary DUT must trigger the protocol monitor.
+  const source = readFileSync("rtl/arithmetic_engine.sv", "utf8");
+  const mutant = source.replace("assign in_ready = !rst && !out_valid;", "assign in_ready = !rst;");
+  if (mutant === source) throw new Error("protocol negative control no longer applies");
+  const mutantPath = join(dir, "mutant.sv");
+  const mutantExe = join(dir, "mutant.vvp");
+  writeFileSync(mutantPath, mutant);
+  run("iverilog", ["-g2012", "-s", "arithmetic_engine_tb", "-o", mutantExe, mutantPath, "rtl/tb/arithmetic_engine_tb.sv"]);
+  const bad = spawnSync("vvp", [mutantExe, `+vectors=${input}`], { encoding: "utf8", timeout: 60000 });
+  if (bad.status !== 1 || !bad.stdout.includes("protocol: incorrect input readiness after edge"))
+    throw new Error("protocol negative control did not trigger expected assertion");
+  if (args.length) writeFileSync(args[1], csv, { flag: "wx" });
+  console.log(output.split(/\r?\n/).filter((line) => line.startsWith("PASS ")).join("\n"));
+  console.log("PASS protocol negative control and " + workloads.length * 2 + " timing comparisons");
 } finally {
   rmSync(dir, { recursive: true, force: true });
 }
