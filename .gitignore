@@ -20,3 +20,4 @@
 *.pem
 *.pfx
 *.p12
+/rtl-timing.csv

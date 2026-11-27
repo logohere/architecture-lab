@@ -12,6 +12,72 @@ module arithmetic_engine_tb;
 
     arithmetic_engine dut (.*);
 
+    // Sample the public interface before the edge and inspect registered outputs
+    // after nonblocking assignments. No DUT internals or physical timing assumed.
+    integer cycle = 0, first_cycle, accepted = 0, idle = 0, stalled = 0;
+    integer result_cycles, done_accepted, done_idle, done_stalled;
+    integer done_result_cycles, done_retire_cycles;
+    logic was_reset, was_pending, was_ready, was_accepted, was_last;
+    logic old_error;
+    logic [31:0] old_value;
+    logic [6:0] old_nodes;
+
+    always @(posedge clk) begin
+        cycle = cycle + 1;
+        was_reset = rst;
+        was_pending = out_valid;
+        was_ready = out_ready;
+        was_accepted = in_valid && in_ready;
+        was_last = in_last;
+        old_error = out_error;
+        old_value = out_value;
+        old_nodes = out_nodes;
+        if (in_ready !== (!rst && !out_valid))
+            $fatal(1, "protocol: incorrect input readiness");
+        if (was_reset) begin
+            accepted = 0; idle = 0; stalled = 0;
+        end else if (was_pending) begin
+            if (was_accepted) $fatal(1, "protocol: accepted input while output pending");
+            if (was_ready) begin
+                done_accepted = accepted;
+                done_idle = idle;
+                done_stalled = stalled;
+                done_result_cycles = result_cycles;
+                done_retire_cycles = cycle - first_cycle + 1;
+                accepted = 0; idle = 0; stalled = 0;
+            end else stalled = stalled + 1;
+        end else if (was_accepted) begin
+            if (accepted == 0) first_cycle = cycle;
+            accepted = accepted + 1;
+        end else if (accepted != 0) idle = idle + 1;
+
+        #1;
+        if (in_ready !== (!rst && !out_valid))
+            $fatal(1, "protocol: incorrect input readiness after edge");
+        if (was_reset) begin
+            if ({out_valid, out_error, out_value, out_nodes} !== 41'd0)
+                $fatal(1, "protocol: reset did not clear output");
+        end else if (was_pending && !was_ready) begin
+            if ({out_valid, out_error, out_value, out_nodes} !== {1'b1, old_error, old_value, old_nodes})
+                $fatal(1, "protocol: output changed under backpressure");
+        end else if (was_pending && was_ready) begin
+            if (out_valid !== 1'b0) $fatal(1, "protocol: result did not retire");
+        end else if (!was_accepted) begin
+            if (out_valid !== 1'b0) $fatal(1, "protocol: unsolicited output");
+        end else begin
+            if (was_last && out_valid !== 1'b1)
+                $fatal(1, "protocol: missing final-beat result");
+            if (out_valid) begin
+                result_cycles = cycle - first_cycle + 1;
+                if (out_error === 1'b1) begin
+                    if ({out_value, out_nodes} !== 39'd0)
+                        $fatal(1, "protocol: malformed error result");
+                end else if (out_error !== 1'b0 || out_nodes !== accepted[6:0])
+                    $fatal(1, "protocol: incorrect successful beat count");
+            end
+        end
+    end
+
     task automatic send(input logic [1:0] op, input logic [5:0] a,
                         input logic [5:0] b, input logic [31:0] literal,
                         input logic last);
@@ -62,6 +128,9 @@ module arithmetic_engine_tb;
     integer fd, count, cases, i, j, op, a, b;
     logic [31:0] literal, expected;
     string vectors;
+    integer ops [0:63], lefts [0:63], rights [0:63];
+    logic [31:0] literals [0:63];
+    integer mode;
 
     initial begin
         if (!$value$plusargs("vectors=%s", vectors)) $fatal(1, "missing vectors");
@@ -74,9 +143,31 @@ module arithmetic_engine_tb;
             for (j = 0; j < count; j = j + 1) begin
                 if ($fscanf(fd, "%d %d %d %h", op, a, b, literal) != 4)
                     $fatal(1, "bad node");
-                send(op[1:0], a[5:0], b[5:0], literal, j == count - 1);
+                ops[j] = op; lefts[j] = a; rights[j] = b; literals[j] = literal;
             end
-            check_result(0, expected, count[6:0]);
+            // Replay each workload without gaps and with exactly two idle edges
+            // between beats. Both modes retain the same output backpressure.
+            for (mode = 0; mode < 2; mode = mode + 1) begin
+                @(negedge clk);
+                for (j = 0; j < count; j = j + 1) begin
+                    if (in_ready !== 1'b1) $fatal(1, "timing: input unexpectedly blocked");
+                    in_opcode = ops[j][1:0];
+                    in_left = lefts[j][5:0];
+                    in_right = rights[j][5:0];
+                    in_literal = literals[j];
+                    in_last = j == count - 1;
+                    in_valid = 1;
+                    @(negedge clk);
+                    if (mode == 1 && j < count - 1) begin
+                        in_valid = 0;
+                        repeat (2) @(negedge clk);
+                    end
+                end
+                in_valid = 0;
+                check_result(0, expected, count[6:0]);
+                $display("TIMING,%0d,%0d,%0d,%0d,%0d,%0d,%0d", i, mode,
+                    done_accepted, done_idle, done_stalled, done_result_cycles, done_retire_cycles);
+            end
         end
         $fclose(fd);
         // Invalid opcode, forward edge, repeated operand, disconnected graph.
